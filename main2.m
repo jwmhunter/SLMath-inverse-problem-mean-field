@@ -12,6 +12,19 @@ max_iter = 100000;
 ht = 0.2; Nt = int64(1/ht); % for U
 hs = 2;
 
+%% Set function f(u(t,x),\theta)
+f_id = 3; 
+switch f_id
+    case 1
+        disp('f(u,\theta) = ((u-\theta)^+).^2')
+    case 2
+        disp('f(u,\theta) = log(1+exp(u-\theta))')
+    case 3
+        disp('f(u,\theta) = exp(-(u-\theta).^2)')
+    case 4
+        disp('f(u,\theta) = log(1+exp(u-\theta)).^2')
+end
+
 %% Given data
 Theta_sol = randn(Total_N,1);
 % Total_X = rand(1,Total_M);
@@ -19,7 +32,7 @@ Total_X = linspace(-5,5,Total_M);
 
 %% Get reference U using Theta_sol
 tic
-Total_U_ref = Euler2_U(Total_X,Theta_sol,Total_N,Total_M,ht,Nt); % Euler_U follows o(NM).
+Total_U_ref = Euler2_U(Total_X,Theta_sol,Total_N,Total_M,ht,Nt,f_id); % Euler_U follows o(NM).
 toc
 
 Total_U_ref = Total_U_ref(end,:);
@@ -33,9 +46,9 @@ s = 0;
 L = []; mean_theta = []; var_theta = [];
 tic
 while (s<max_iter)
-    U = Euler2_U(X,Theta,N,M,ht,Nt); % size: (Nt+1)*M
-    eta = Euler2_eta(U(end,:),Theta,U_ref,N,M,ht,Nt); % size: (Nt+1)*M
-    grd = (hs*ht)/(N*M)*int_sum(U,Theta,eta,N,M,Nt);
+    U = Euler2_U(X,Theta,N,M,ht,Nt,f_id); % size: (Nt+1)*M
+    eta = Euler2_eta(U(end,:),Theta,U_ref,N,M,ht,Nt,f_id); % size: (Nt+1)*M
+    grd = (hs*ht)/(N*M)*int_sum(U,Theta,eta,N,M,Nt,f_id);
     if sum(abs(grd),'all')<stop_criterion
         break;
     end
